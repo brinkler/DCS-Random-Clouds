@@ -51,13 +51,15 @@ Get-ChildItem $MIZ | ForEach-Object {
     $clouds = Select-String  -Pattern '\["preset"\] = "(Rainy)?Preset\d+",' -InputObject $mission_tmp 
     $replaceValue = $clouds.Matches.Value
 
-    Write-Host "Replacing in : `n$replaceValue"
+    Write-Host "Replacing Clouds : `n$replaceValue"
     
     $isItRainingRandom = Get-Random -Minimum 0 -Maximum 4
     $newCloudsValue = Get-Random -Minimum 1 -Maximum 27
+    $newBaseValue = Get-Random -Minimum 4300 -Maximum 20000
     if ($isItRainingRandom -lt 1) {
         Write-Host "It is raining"
         $newCloudsValue = Get-Random -Minimum 1 -Maximum 3
+        $newBaseValue = Get-Random -Minimum 2000 -Maximum 4000
         $newClouds = $replaceValue -replace '\["preset"\] = ".*",', "[`"preset`"] = `"RainyPreset$newCloudsValue`","
     }
     else {
@@ -70,27 +72,25 @@ Get-ChildItem $MIZ | ForEach-Object {
     # Update cloud presets 
     $mission_tmp = $mission_tmp -replace [regex]::escape($replaceValue), $newClouds
     # Log result from replace
-    $replacedClouds = Select-String  -Pattern '\["preset"\] = ".*",' -InputObject $mission_tmp
+    $replacedClouds = Select-String  -Pattern '\["preset"\] = ".*",' -InputObject $mission_tmp -AllMatches 
     Write-Host "Replaced clouds`n" $replacedClouds.Matches.Value
 
     ## Next bit is essentially the same
     # do we need t replace base?
+    Write-Host "`nReplace Base: `n"
     $base = Select-String  -Pattern '\["base"\] = \d+,' -InputObject $mission_tmp 
     $replaceBase = $base.Matches.Value
-    $newBaseValue = Get-Random -Minimum 100 -Maximum 20000
-    $newBase = "[`"base`"] = $newBaseValue"
+    
+    $newBase = "[`"base`"] = $newBaseValue,"
 
     Write-Host "Replace base : " $replaceBase
     Write-Host "With         : " $newBase
 
     $mission_tmp = $mission_tmp -replace [regex]::escape($replaceBase), $newBase
     # Log result from replace
-    $replacedBase = Select-String  -Pattern '\["base"\] = ".*",' -InputObject $mission_tmp 
+    $replacedBase = Select-String  -Pattern '\["base"\] = .*,' -InputObject $mission_tmp -AllMatches 
     Write-Host "Replaced base`n" $replacedBase.Matches.Value
     ## 
-
-    $fileZip.Dispose()
-    exit
 
     # Re-open the file this time with streamwriter
     $desiredFile = [System.IO.StreamWriter]($fileZip.Entries | Where-Object { $_.FullName -EQ 'mission' }).Open()
