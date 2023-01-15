@@ -20,6 +20,52 @@ param (
     [String] $MIZ
 )
 
+function Preset2Base {
+    param ( 
+        $preset
+    )
+    
+    # Possibly the stupid way to do this
+
+    $presetHash = [ordered]@{
+        "Preset1"      = 2520;
+        "Preset2"      = 2520;
+        "Preset3"      = 2520;
+        "Preset4"      = 2520;
+        "Preset5"      = 4620;
+        "Preset6"      = 2520;
+        "Preset7"      = 2520;
+        "Preset8"      = 5460;
+        "Preset9"      = 2520;
+        "Preset10"     = 2520;
+        "Preset11"     = 5460;
+        "Preset12"     = 3360;
+        "Preset13"     = 3360;
+        "Preset14"     = 2520;
+        "Preset15"     = 4200;
+        "Preset16"     = 4200;
+        "Preset17"     = 2520;
+        "Preset18"     = 3780;
+        "Preset19"     = 2940;
+        "Preset20"     = 3780;
+        "Preset21"     = 2520;
+        "Preset22"     = 2520;
+        "Preset23"     = 3360;
+        "Preset24"     = 2520;
+        "Preset25"     = 3360;
+        "Preset26"     = 2940;
+        "Preset27"     = 2520;
+        "RainyPreset1" = 2940;
+        "RainyPreset2" = 2520;
+        "RainyPreset3" = 2520;
+    }
+
+    Write-Host "Preset for $preset" $presetHash[$preset]
+
+    return $presetHash[$preset]
+}
+
+
 Write-Host "Running random clouds on $MIZ"
 
 #Launch command in powershell window: ./mission.ps1 E:\temp\*.miz 
@@ -55,11 +101,11 @@ Get-ChildItem $MIZ | ForEach-Object {
     
     $isItRainingRandom = Get-Random -Minimum 0 -Maximum 4
     $newCloudsValue = Get-Random -Minimum 1 -Maximum 27
-    $newBaseValue = Get-Random -Minimum 4300 -Maximum 20000
+    $newBaseValue = Preset2Base("Preset$newCloudsValue")
     if ($isItRainingRandom -lt 1) {
         Write-Host "It is raining"
         $newCloudsValue = Get-Random -Minimum 1 -Maximum 3
-        $newBaseValue = Get-Random -Minimum 2000 -Maximum 4000
+        $newBaseValue = Preset2Base("RainyPreset$newCloudsValue")
         $newClouds = $replaceValue -replace '\["preset"\] = ".*",', "[`"preset`"] = `"RainyPreset$newCloudsValue`","
     }
     else {
@@ -105,3 +151,5 @@ Get-ChildItem $MIZ | ForEach-Object {
     $fileZip.Dispose()
 
 }
+
+
